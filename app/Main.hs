@@ -85,18 +85,18 @@ main = do
 valueToHtml :: Value -> Html ()
 valueToHtml =
   \case
-    String string -> inline "string" (toHtml string)
-    Char char -> inline "char" (toHtml char)
-    Float float -> inline "float" (toHtml float)
-    Integer integer -> inline "integer" (toHtml integer)
+    String string -> block "string" (toHtml string)
+    Char char -> block "char" (toHtml char)
+    Float float -> block "float" (toHtml float)
+    Integer integer -> block "integer" (toHtml integer)
     Ratio n d ->
-      inline
+      block
         "ratio"
         (do valueToHtml n
             "/"
             valueToHtml d)
     Neg n ->
-      inline
+      block
         "neg"
         (do "-"
             valueToHtml n)
@@ -107,11 +107,17 @@ valueToHtml =
               (null xs)
               (block
                  "contents "
-                 (mapM_
-                    (\(i, e) -> do
-                       when (i > 0) ", "
-                       valueToHtml e)
-                    (zip [0 :: Int ..] xs)))
+                 (table_
+                    (mapM_
+                       (\(i, e) ->
+                          tr_
+                            (do td_
+                                  [class_ "field-comma-td"]
+                                  (if i > 0
+                                     then ", "
+                                     else "")
+                                td_ [class_ "field-value-td"] (valueToHtml e)))
+                       (zip [0 :: Int ..] xs))))
             inline "brace" "]")
     Con name xs ->
       togglable "con"
@@ -189,14 +195,3 @@ isSimple =
     Tuple [] -> True
     Rec _ [] -> True
     _ -> False
-
-
-
-
-
-
-
-
-
-
-
