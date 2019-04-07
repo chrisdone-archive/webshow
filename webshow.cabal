@@ -1,5 +1,5 @@
 name:                webshow
-version:             0.1.0.0
+version:             0.0.0
 synopsis:            Show programming language printed values in a web UI
 description:         Show programming language printed values in a web UI
 homepage:            https://github.com/chrisdone/webshow#readme
