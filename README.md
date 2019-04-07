@@ -2,10 +2,9 @@
 
 Run `webshow` in a directory and get pretty browsing.
 
+## Usage
+
 Supports only Haskell Show values at the moment.
-
-<img src="https://i.imgur.com/7MUMXEG.png">
-
 
 ```
 Usage: webshow [--version] [--help] [-p|--port ARG] [-d|--directory ARG]
@@ -17,3 +16,7 @@ Available options:
   -p,--port ARG            Port number to listen on
   -d,--directory ARG       Directory to look at
 ```
+
+## Example
+
+<img src="https://i.imgur.com/7MUMXEG.png">
