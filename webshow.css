@@ -1,0 +1,41 @@
+body {
+  font-family: monospace;
+}
+
+pre {
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+.contents {
+  padding: 0.1em 0.1em 0.1em 1em;
+}
+
+.equals { margin-left: 1em; margin-right: 1em }
+
+td.field-name-td, td.field-equals-td, td.field-comma-td {
+  vertical-align: top;
+}
+
+span.brace {
+}
+
+span.con-name {
+    color: #22863a;
+}
+
+span.integer {
+    color: #005cc5;
+}
+
+.toggle .check + .inner > .contents {
+  display: none
+}
+
+.toggle .check:checked + .inner > .contents {
+  display: block;
+}
+.toggle { display: flex; }
