@@ -128,29 +128,45 @@ valueToHtml =
       togglable
         "list"
         (\button -> do
-           button (inline "brace" "[")
+           let button' =
+                 if null xs
+                   then id
+                   else button
+           button' (inline "brace" "[")
            unless
              (null xs)
-             (block
-                "contents "
-                (table_
-                   (mapM_
-                      (\(i, e) ->
-                         tr_
-                           (do td_
-                                 [class_ "field-comma-td"]
-                                 (if i > 0
-                                    then ", "
-                                    else "")
-                               td_ [class_ "field-value-td"] (valueToHtml e)))
-                      (zip [0 :: Int ..] xs))))
-           button (inline "brace" "]"))
+             (do button'
+                   (inline
+                      "preview"
+                      (toHtml
+                         (show (length xs) ++
+                          " item" ++
+                          if length xs == 1
+                            then ""
+                            else "s")))
+                 block
+                   "contents"
+                   (table_
+                      (mapM_
+                         (\(i, e) ->
+                            tr_
+                              (do td_
+                                    [class_ "field-comma-td"]
+                                    (if i > 0
+                                       then ", "
+                                       else "")
+                                  td_ [class_ "field-value-td"] (valueToHtml e)))
+                         (zip [0 :: Int ..] xs))))
+           button' (inline "brace" "]"))
     Con name xs ->
       togglable
         "con"
         (\button -> do
            when (not (null xs)) (inline "brace" "(")
-           button (inline "con-name" (toHtml name))
+           (if null xs
+              then id
+              else button)
+             (inline "con-name" (toHtml name))
            block "contents" (mapM_ (\e -> block "con-slot" (valueToHtml e)) xs)
            when (not (null xs)) (inline "brace" ")"))
     Tuple xs ->
@@ -178,7 +194,7 @@ valueToHtml =
         (\button -> do
            when (not (null xs)) (inline "brace" "(")
            button (inline "con-name" (toHtml name))
-           inline "brace" " {"
+           inline "brace open-brace" "{"
            block
              "contents"
              (table_
@@ -202,7 +218,7 @@ valueToHtml =
     inline name inner = span_ [class_ name] inner
     block name inner = div_ [class_ name] inner
     togglable cls inner = do
-      uuid <- fmap (T.pack  . show) get
+      uuid <- fmap (T.pack . show) get
       modify (+ 1)
       div_
         [class_ ("toggle " <> cls)]

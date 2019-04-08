@@ -28,18 +28,15 @@ span.brace {
   color: #666;
 }
 
-span.con-name:hover {
-  background: #3da491;
-  color: white;
-}
-
-span.con-name, .list > .brace {
-  cursor: pointer;
-}
+span.open-brace { margin-left: 0.5em; }
 
 span.con-name {
   color: #22863a;
   border-radius: 3px;
+}
+
+.con-name, .brace {
+  cursor: default;
 }
 
 span.integer {
@@ -53,9 +50,20 @@ span.integer {
 .toggle .check:checked + .inner > .contents {
   display: block;
 }
+
+.toggle .check:checked + .inner > label > .preview {
+  display: none;
+}
+
 .toggle { display: flex; }
 
 .inner:hover > .brace {
   background: #e1f6ee;
   color: green;
+}
+
+label:hover * {
+  background: #3da491;
+  color: white;
+  cursor: pointer;
 }
