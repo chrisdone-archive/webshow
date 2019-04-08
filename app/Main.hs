@@ -10,6 +10,7 @@ import           Data.Maybe
 import           Data.String
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+import qualified Data.Text.IO as T
 import           Language.Haskell.HsColour.CSS
 import           Lucid
 import           Network.HTTP.Types
@@ -40,10 +41,11 @@ app dir req respond = do
                   (do p_ (small_ "(Unknown file type. Display as plain text.)")
                       pre_ (toHtml contents))))
         Just generate ->
-          reply
-            (html_
-               (do head_ (style_ stylesheet)
-                   body_ (generate contents)))
+          do stylesheet <- getStylesheet
+             reply
+               (html_
+                  (do head_ (style_ stylesheet)
+                      body_ (generate contents)))
     _ -> do
       files <-
         fmap
@@ -67,8 +69,13 @@ app dir req respond = do
       respond
         (responseLBS status200 [("Content-Type", "text/html")] (renderBS html))
 
-stylesheet :: T.Text
-stylesheet = T.decodeUtf8 $(embedFile "webshow.css")
+getStylesheet :: IO T.Text
+getStylesheet =
+  if dev
+    then T.readFile "webshow.css"
+    else pure (T.decodeUtf8 $(embedFile "webshow.css"))
+  where
+    dev = False
 
 supported :: [(String, String -> Html ())]
 supported =
@@ -117,7 +124,8 @@ valueToHtml =
         (do "-"
             valueToHtml n)
     List xs ->
-      togglable "list"
+      togglable
+        "list"
         (do inline "brace" "["
             unless
               (null xs)
@@ -136,12 +144,11 @@ valueToHtml =
                        (zip [0 :: Int ..] xs))))
             inline "brace" "]")
     Con name xs ->
-      togglable "con"
+      togglable
+        "con"
         (do when (not (null xs)) (inline "brace" "(")
             inline "con-name" (toHtml name)
-            block
-              "contents"
-              (mapM_ (\e -> block "con-slot" (valueToHtml e)) xs)
+            block "contents" (mapM_ (\e -> block "con-slot" (valueToHtml e)) xs)
             when (not (null xs)) (inline "brace" ")"))
     Tuple xs ->
       block
@@ -163,7 +170,8 @@ valueToHtml =
             when (not (null xs)) (inline "brace" ")"))
     InfixCons {} -> block "infix-con" "TODO: infix"
     Rec name xs ->
-      togglable "rec"
+      togglable
+        "rec"
         (do when (not (null xs)) (inline "brace" "(")
             inline "con-name" (toHtml name)
             inline "brace" " {"
@@ -192,7 +200,7 @@ valueToHtml =
     inline name inner = span_ [class_ name] inner
     block name inner = div_ [class_ name] inner
     togglable cls inner =
-      div_
+      label_
         [class_ ("toggle " <> cls)]
         (do input_ [type_ "checkbox", class_ "check"]
             div_ [class_ "inner"] inner)
