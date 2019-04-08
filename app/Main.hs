@@ -35,17 +35,33 @@ app dir req respond = do
       case lookup (takeExtension (T.unpack fp)) supported of
         Nothing ->
           reply
-            (html_ (body_ (do p_ (small_ "(Unknown file type. Display as plain text.)")
-                              pre_ (toHtml contents))))
-        Just generate -> reply (html_ (do head_ (style_ stylesheet)
-                                          body_ (generate contents)))
+            (html_
+               (body_
+                  (do p_ (small_ "(Unknown file type. Display as plain text.)")
+                      pre_ (toHtml contents))))
+        Just generate ->
+          reply
+            (html_
+               (do head_ (style_ stylesheet)
+                   body_ (generate contents)))
     _ -> do
       files <-
         fmap
           (filter (isJust . flip lookup supported . takeExtension) .
            filter (not . all (== '.')))
           (getDirectoryContents dir)
-      reply (html_ (body_ (ul_ (mapM_ (\file -> li_ (a_ [href_ (fromString ("/" ++ file))] (toHtml file))) files))))
+      reply
+        (html_
+           (body_
+              (do p_
+                    (do "Renderable files in "
+                        code_ (toHtml dir))
+                  ul_
+                    (mapM_
+                       (\file ->
+                          li_
+                            (a_ [href_ (fromString ("/" ++ file))] (toHtml file)))
+                       files))))
   where
     reply html =
       respond
