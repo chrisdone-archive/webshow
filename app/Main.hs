@@ -5,6 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import           Control.Monad
+import           Control.Monad.State
 import           Data.FileEmbed
 import           Data.Maybe
 import           Data.String
@@ -13,6 +14,7 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import           Language.Haskell.HsColour.CSS
 import           Lucid
+import           Lucid.Base
 import           Network.HTTP.Types
 import           Network.Wai
 import           Network.Wai.Handler.Warp (run)
@@ -20,7 +22,7 @@ import           Options.Applicative
 import           Options.Applicative.Simple
 import           System.Directory
 import           System.FilePath
-import           Text.Show.Pretty (Value(..), Name(..), exportHtml, defaultHtmlOpts, valToHtml, parseValue)
+import           Text.Show.Pretty (Value(..), parseValue)
 
 data Opts =
   Opts
@@ -75,15 +77,14 @@ getStylesheet =
     then T.readFile "webshow.css"
     else pure (T.decodeUtf8 $(embedFile "webshow.css"))
   where
-    dev = False
+    dev = True
 
 supported :: [(String, String -> Html ())]
 supported =
   [ ( ".hs"
     , \contents ->
         case parseValue contents of
-          Just val ->
-            valueToHtml val
+          Just val -> evalState (commuteHtmlT (valueToHtml val)) 0
           Nothing -> do
             p_
               (small_
@@ -105,7 +106,7 @@ main = do
   putStrLn ("Listening on http://localhost:" ++ show @Int (optsPort opts))
   run (optsPort opts) (app (optsDir opts))
 
-valueToHtml :: Value -> Html ()
+valueToHtml :: MonadState Int m => Value -> HtmlT m ()
 valueToHtml =
   \case
     String string -> block "string" (toHtml string)
@@ -126,30 +127,32 @@ valueToHtml =
     List xs ->
       togglable
         "list"
-        (do inline "brace" "["
-            unless
-              (null xs)
-              (block
-                 "contents "
-                 (table_
-                    (mapM_
-                       (\(i, e) ->
-                          tr_
-                            (do td_
-                                  [class_ "field-comma-td"]
-                                  (if i > 0
-                                     then ", "
-                                     else "")
-                                td_ [class_ "field-value-td"] (valueToHtml e)))
-                       (zip [0 :: Int ..] xs))))
-            inline "brace" "]")
+        (\button -> do
+           button (inline "brace" "[")
+           unless
+             (null xs)
+             (block
+                "contents "
+                (table_
+                   (mapM_
+                      (\(i, e) ->
+                         tr_
+                           (do td_
+                                 [class_ "field-comma-td"]
+                                 (if i > 0
+                                    then ", "
+                                    else "")
+                               td_ [class_ "field-value-td"] (valueToHtml e)))
+                      (zip [0 :: Int ..] xs))))
+           button (inline "brace" "]"))
     Con name xs ->
       togglable
         "con"
-        (do when (not (null xs)) (inline "brace" "(")
-            inline "con-name" (toHtml name)
-            block "contents" (mapM_ (\e -> block "con-slot" (valueToHtml e)) xs)
-            when (not (null xs)) (inline "brace" ")"))
+        (\button -> do
+           when (not (null xs)) (inline "brace" "(")
+           button (inline "con-name" (toHtml name))
+           block "contents" (mapM_ (\e -> block "con-slot" (valueToHtml e)) xs)
+           when (not (null xs)) (inline "brace" ")"))
     Tuple xs ->
       block
         "tuple"
@@ -172,38 +175,39 @@ valueToHtml =
     Rec name xs ->
       togglable
         "rec"
-        (do when (not (null xs)) (inline "brace" "(")
-            inline "con-name" (toHtml name)
-            inline "brace" " {"
-            block
-              "contents"
-              (table_
-                 (mapM_
-                    (\(i, (n, e)) ->
-                       tr_
-                         (do td_
-                               [class_ "field-comma-td"]
-                               (if i > 0
-                                  then ", "
-                                  else "")
-                             td_
-                               [class_ "field-name-td"]
-                               (inline "field-name" (toHtml n))
-                             td_
-                               [class_ "field-equals-td"]
-                               (inline "equals" "=")
-                             td_ [class_ "field-value-td"] (valueToHtml e)))
-                    (zip [0 :: Int ..] xs)))
-            inline "brace" "}"
-            when (not (null xs)) (inline "brace" ")"))
+        (\button -> do
+           when (not (null xs)) (inline "brace" "(")
+           button (inline "con-name" (toHtml name))
+           inline "brace" " {"
+           block
+             "contents"
+             (table_
+                (mapM_
+                   (\(i, (n, e)) ->
+                      tr_
+                        (do td_
+                              [class_ "field-comma-td"]
+                              (if i > 0
+                                 then ", "
+                                 else "")
+                            td_
+                              [class_ "field-name-td"]
+                              (inline "field-name" (toHtml n))
+                            td_ [class_ "field-equals-td"] (inline "equals" "=")
+                            td_ [class_ "field-value-td"] (valueToHtml e)))
+                   (zip [0 :: Int ..] xs)))
+           inline "brace" "}"
+           when (not (null xs)) (inline "brace" ")"))
   where
     inline name inner = span_ [class_ name] inner
     block name inner = div_ [class_ name] inner
-    togglable cls inner =
-      label_
+    togglable cls inner = do
+      uuid <- fmap (T.pack  . show) get
+      modify (+ 1)
+      div_
         [class_ ("toggle " <> cls)]
-        (do input_ [type_ "checkbox", class_ "check"]
-            div_ [class_ "inner"] inner)
+        (do input_ [type_ "checkbox", class_ "check", id_ uuid]
+            div_ [class_ "inner"] (inner (\html -> label_ [for_ uuid] html)))
 
 isSimple :: Value -> Bool
 isSimple =

@@ -25,6 +25,7 @@ td.field-name-td, td.field-equals-td, td.field-comma-td {
 }
 
 span.brace {
+  color: #666;
 }
 
 span.con-name:hover {
@@ -32,7 +33,7 @@ span.con-name:hover {
   color: white;
 }
 
-span.con-name, .inner > .brace {
+span.con-name, .list > .brace {
   cursor: pointer;
 }
 
