@@ -17,6 +17,8 @@ Available options:
   -d,--directory ARG       Directory to look at
 ```
 
+Put a file like `[1,2,3]` in `x.hs` in the directory and then browse to it.
+
 ## Example
 
 <img src="https://i.imgur.com/ZnO5wBp.png">
