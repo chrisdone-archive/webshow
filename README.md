@@ -36,9 +36,7 @@ And then go to `http://localhost:1234/thing.hs`.
 
 You click the constructor names or parentheses or list brackets to expand/collapse them interactively, like web browser's consoles that view JS objects.
 
-Video:
-
-<img src="https://i.imgur.com/JCBUMbx.mp4">
+[Video](https://imgur.com/a/jwuxsIg)
 
 High-res screenshot:
 
