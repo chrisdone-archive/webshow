@@ -36,4 +36,14 @@ And then go to `http://localhost:1234/thing.hs`.
 
 You click the constructor names or parentheses or list brackets to expand/collapse them interactively, like web browser's consoles that view JS objects.
 
+Video:
+
+<img src="https://i.imgur.com/JCBUMbx.mp4">
+
+High-res screenshot:
+
 <img src="https://i.imgur.com/ZnO5wBp.png">
+
+## How it works
+
+It uses Haskell's `pretty-show` to parse your Haskell `Show` output. So use types that have reasonable output. If you wrote a custom Show instance, it'll just show the text as plain text.
