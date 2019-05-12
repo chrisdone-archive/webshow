@@ -19,4 +19,4 @@ Available options:
 
 ## Example
 
-<img src="https://i.imgur.com/7MUMXEG.png">
+<img src="https://i.imgur.com/ZnO5wBp.png">
