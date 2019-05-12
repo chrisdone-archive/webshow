@@ -17,7 +17,11 @@ Available options:
   -d,--directory ARG       Directory to look at
 ```
 
-Put a file like `[1,2,3]` in `x.hs` in the directory and then browse to it.
+Example
+```
+$ webshow -d /my/path -p 1234
+```
+Put a file like `[1,2,3]` in `x.hs` in the `/my/path` directory and then browse to it.
 
 ## Example
 
