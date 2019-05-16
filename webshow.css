@@ -67,3 +67,7 @@ label:hover * {
   color: white;
   cursor: pointer;
 }
+
+label > span:empty::after {
+    content: "_"
+}
